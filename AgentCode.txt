@@ -1,0 +1,86 @@
+// Platform: electric imp
+// agent code
+
+// printing the agent URL at the start
+server.log("LED Web Control Agent Online: " + http.agenturl());
+
+// requestHandler handles all http requests coming into the agent.
+// This function is called in response to the event handler method onrequest(requestHandler),
+// from the object "http".The code to handle the http event will be "http.onrequest(requestHandler)".
+//It's only setup to look for a select few requests: "led", "rgb", "user" and "timer".
+function requestHandler(request, response)  {
+
+    try { // exception handling
+           
+           
+        // checking if led is a parameter in the http request sent by the user
+        if ("led" in request.query) {
+
+            if ((request.query.led == "1") || (request.query.led == "0"))
+            {
+                // convert the led query parameter to an integer
+                local ledStatus = request.query.led.tointeger();
+                
+                // this method triggers an event that will be handled in the device with 
+                //the event handler agent.on() as explained on the paper
+                // this method sends "led" message to device, and send ledState as the data
+                device.send("led", ledStatus); 
+            }
+        }
+
+        // checking if "rgb" is a parameter in the http request sent by the user
+        if ("rgb" in request.query) {
+            
+            // the colors are send as string and we convert them to number
+            local color = request.query.rgb; 
+            if (color[0] == '#') { // The request starts with '#' (%23)
+            
+                // Constructing a table with three parameters: r, g, and b
+                // COnvert r, g, and b from ASCII charactert to 0-255 values.
+                local returnTable = {
+                    r = ASCIItoHex(color[1])*16 + ASCIItoHex(color[2])
+                    g = ASCIItoHex(color[3])*16 + ASCIItoHex(color[4])
+                    b = ASCIItoHex(color[5])*16 + ASCIItoHex(color[6])
+                };
+                
+                
+                // the method "send" from the object device will triger an event on the agent side which
+                // will be handle with the method agent.on(). Here we just pass a table as parameter to the agent.
+                // As explained in the paper electric imp stores data in a table format.
+                device.send("rgb", returnTable); // send our color table to the imp
+            }
+        }
+        // check if a "timer" query was received:
+        if ("timer" in request.query) {
+            // convert to an integer, and pass it out to the imp.
+            device.send("timer", request.query.timer.tointeger());
+        }
+        // if the http requst was handled without errors send a response back saying everything was OK.
+        response.send(200, "OK");
+    } 
+    catch (ex) {
+        // if there was an error in the request send a response that there was an error
+        response.send(500, "Internal Server Error: " + ex);
+    }
+}
+
+
+
+// the function onrequest(requestHandler); handles the event of the http request on the agent. 
+//When such event is recieved this function calls "requestHandler"
+http.onrequest(requestHandler);
+
+
+// This function is called from requestHandler(request, response).
+// It converts an ASCII character to a number
+function ASCIItoHex(colorNibble) {
+    if ((colorNibble >= '0') && (colorNibble <= '9')) {
+        return colorNibble - 48;
+    }
+    else if ((colorNibble >= 'a') && (colorNibble <= 'f')) {
+        return colorNibble - 87;
+    }
+    else if ((colorNibble >= 'A') && (colorNibble <= 'F')) {
+        return colorNibble - 55;
+    }
+}
