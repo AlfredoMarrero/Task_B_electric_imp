@@ -1,10 +1,9 @@
+
 // Platform: electric imp
 // device code
 
-
 // Configure the imp
 imp.configure("imp Web Control", [], []); 
-
 
 // Pin Setup
 // The from the object "hardware" we can the methos  pin1,
@@ -22,7 +21,6 @@ redPin.configure(PWM_OUT, 0.01, 0);   // PWM output 10ms clock, off
 greenPin.configure(PWM_OUT, 0.01, 0); // PWM output 10ms clock, off
 bluePin.configure(PWM_OUT, 0.01, 0);  // PWM output 10ms clock, off
 
-
 // this is called by the agent.The event from the agent is 
 //handled with the function agent.on("led", setLed).
 //It turns the red LED on or off.
@@ -30,8 +28,6 @@ function setLed(ledState)
 {
     ledPin.write(ledState);
 }
-
-
 
 
 // This function is called in the device in response to an event from the agent.
@@ -43,8 +39,6 @@ function setRGB(rgbValue)
     redPin.write(rgbValue.r/255.0);
     greenPin.write(rgbValue.g/255.0);
 }
-
-
 
 
 // Function called by the agent. Turns the LED off 
